@@ -304,3 +304,391 @@ $ sudo apt update
 Now install the packages:
 
 $ sudo apt install -y kubeadm kubectl kubelet
+ubuntu@ip-172-31-54-227:~$  sudo apt install -y kubeadm kubectl kubelet
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+
+No apt package "kubeadm", but there is a snap with that name.
+Try "snap install kubeadm"
+
+
+No apt package "kubectl", but there is a snap with that name.
+Try "snap install kubectl"
+
+
+No apt package "kubelet", but there is a snap with that name.
+Try "snap install kubelet"
+
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+E: Unable to locate package kubelet
+ubuntu@ip-172-31-54-227:~$
+
+
+ubuntu@ip-172-31-54-227:~$ sudo apt update
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Hit:4 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:5 https://download.docker.com/linux/ubuntu jammy InRelease
+Get:6 https://packages.cloud.google.com/apt kubernetes-xenial InRelease [8993 B]
+Err:6 https://packages.cloud.google.com/apt kubernetes-xenial InRelease
+  The following signatures couldn't be verified because the public key is not available: NO_PUBKEY B53DC80D13EDEF05
+Reading package lists... Done
+W: GPG error: https://packages.cloud.google.com/apt kubernetes-xenial InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY B53DC80D13EDEF05
+E: The repository 'https://apt.kubernetes.io kubernetes-xenial InRelease' is not signed.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+
+
+It's best practice to "hold" these packages so Apt doesn't automatically update them when you run apt upgrade. Kubernetes cluster upgrades should be initiated manually to prevent downtime and avoid unwanted breaking changes.
+sudo apt-mark hold kubeadm kubectl kubelet
+
+ubuntu@ip-172-31-54-227:~$  sudo apt install -y kubeadm kubectl kubelet
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+
+No apt package "kubeadm", but there is a snap with that name.
+Try "snap install kubeadm"
+
+
+No apt package "kubectl", but there is a snap with that name.
+Try "snap install kubectl"
+
+
+No apt package "kubelet", but there is a snap with that name.
+Try "snap install kubelet"
+
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+E: Unable to locate package kubelet
+ubuntu@ip-172-31-54-227:~$ sudo a[t update
+sudo: a[t: command not found
+ubuntu@ip-172-31-54-227:~$ sudo apt update
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Hit:4 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:5 https://download.docker.com/linux/ubuntu jammy InRelease
+Get:6 https://packages.cloud.google.com/apt kubernetes-xenial InRelease [8993 B]
+Err:6 https://packages.cloud.google.com/apt kubernetes-xenial InRelease
+  The following signatures couldn't be verified because the public key is not available: NO_PUBKEY B53DC80D13EDEF05
+Reading package lists... Done
+W: GPG error: https://packages.cloud.google.com/apt kubernetes-xenial InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY B53DC80D13EDEF05
+E: The repository 'https://apt.kubernetes.io kubernetes-xenial InRelease' is not signed.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+ubuntu@ip-172-31-54-227:~$ sudo apt-mark hold kubeadm kubectl kubelet
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+E: Unable to locate package kubelet
+E: No packages found
+
+
+
+error to solve this
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update -y
+
+or follow these steps
+containerd config default > /etc/containerd/config.toml
+    
+    4  sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
+    5  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    6  sudo apt-get update -y
+    7  sudo apt update
+    8  sudo apt-mark hold kubeadm kubectl kubelet
+    9  kubectl version
+   10  kubectl --version
+   11  kubectl --v
+   12  kubectl version
+
+root@ip-172-31-58-204:~# kubectl version
+Client Version: v1.28.2
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+
+Disabling Swap
+Kubernetes does not work when swap is enabled. You must turn swap off before you create your cluster. Otherwise you'll find the provisioning process hangs while waiting for Kubelet to start.
+Run this command to disable swap:
+
+$ sudo swapoff -a
+Next edit your /etc/fstab file and disable any swap mounts:
+
+UUID=ec6efe91-5d34-4c80-b59c-cafe89cc6cb2 / ext4 errors=remount-ro 0 1
+
+/swapfile none swap sw 0 0
+
+This file shows a mount with the swap type as the last line. It should be removed or commented out so that swap remains disabled after system reboots.
+
+ubuntu@ip-172-31-58-204:~$ sudo swapoff -a
+ubuntu@ip-172-31-58-204:~$ vim /etc/fstab
+
+
+Loading the br_netfilter Module
+The br_netfilter kernel module is required to enable iptables to see bridged traffic. Kubeadm won't let you create your cluster when this module's missing.
+
+You can enable it with the following command:
+
+$ sudo modprobe br_netfilter
+Make it persist after a reboot by including it in your system's modules list:
+
+$ echo br_netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+
+ubuntu@ip-172-31-58-204:~$  sudo modprobe br_netfilter
+ubuntu@ip-172-31-58-204:~$ echo br_netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+br_netfilter
+ubuntu@ip-172-31-58-204:~$
+
+Creating Your Cluster
+You're ready to create your Kubernetes cluster. Run kubeadm init on the machine you want to host your control plane:
+
+$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+The --pod-network-cidr flag is included so that a correct CIDR allocation is available to the Pod networking addon that will be installed later on. The default value of 10.244.0.0/16 works in most cases but you might have to change the range if you're using a heavily customized networking environment.
+ubuntu@ip-172-31-58-204:~$ echo br_netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+br_netfilter
+ubuntu@ip-172-31-58-204:~$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.28.3
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+ubuntu@ip-172-31-58-204:~$
+
+ubuntu@ip-172-31-58-204:~$ cat /proc/sys/net/ipv4/ip_forward
+0
+
+it is set to 0 now we shud set to 1
+
+ubuntu@ip-172-31-58-204:~$ cat /proc/sys/net/ipv4/ip_forward
+0
+ubuntu@ip-172-31-58-204:~$ kubeadm reset
+W1031 09:33:58.916537    4888 preflight.go:56] [reset] WARNING: Changes made to this host by 'kubeadm init' or 'kubeadm join' will be reverted.
+[reset] Are you sure you want to proceed? [y/N]: y
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR IsPrivilegedUser]: user is not running as root
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+ubuntu@ip-172-31-58-204:~$  echo 1 > /proc/sys/net/ipv4/ip_forward
+-bash: /proc/sys/net/ipv4/ip_forward: Permission denied
+ubuntu@ip-172-31-58-204:~$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.28.3
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+ubuntu@ip-172-31-58-204:~$ kubeadm reset
+W1031 09:35:39.773703    4980 preflight.go:56] [reset] WARNING: Changes made to this host by 'kubeadm init' or 'kubeadm join' will be reverted.
+[reset] Are you sure you want to proceed? [y/N]: y
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR IsPrivilegedUser]: user is not running as root
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+ubuntu@ip-172-31-58-204:~$ sudo -i
+root@ip-172-31-58-204:~# kubeadm reset
+W1031 09:36:01.098481    5009 preflight.go:56] [reset] WARNING: Changes made to this host by 'kubeadm init' or 'kubeadm join' will be reverted.
+[reset] Are you sure you want to proceed? [y/N]: y
+[preflight] Running pre-flight checks
+W1031 09:36:03.607270    5009 removeetcdmember.go:106] [reset] No kubeadm config, using etcd pod spec to get data directory
+[reset] Deleted contents of the etcd data directory: /var/lib/etcd
+[reset] Stopping the kubelet service
+[reset] Unmounting mounted directories in "/var/lib/kubelet"
+W1031 09:36:03.613343    5009 cleanupnode.go:134] [reset] Failed to evaluate the "/var/lib/kubelet" directory. Skipping its unmount and cleanup: lstat /var/lib/kubelet: no such file or directory
+[reset] Deleting contents of directories: [/etc/kubernetes/manifests /etc/kubernetes/pki]
+[reset] Deleting files: [/etc/kubernetes/admin.conf /etc/kubernetes/kubelet.conf /etc/kubernetes/bootstrap-kubelet.conf /etc/kubernetes/controller-manager.conf /etc/kubernetes/scheduler.conf]
+
+The reset process does not clean CNI configuration. To do so, you must remove /etc/cni/net.d
+
+The reset process does not reset or clean up iptables rules or IPVS tables.
+If you wish to reset iptables, you must do so manually by using the "iptables" command.
+
+If your cluster was setup to utilize IPVS, run ipvsadm --clear (or similar)
+to reset your system's IPVS tables.
+
+The reset process does not clean your kubeconfig files and you must remove them manually.
+Please, check the contents of the $HOME/.kube/config file.
+root@ip-172-31-58-204:~#  echo 1 > /proc/sys/net/ipv4/ip_forward
+root@ip-172-31-58-204:~#   kubeadm init --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.28.3
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+W1031 09:36:57.171617    5026 checks.go:835] detected that the sandbox image "registry.k8s.io/pause:3.6" of the container runtime is inconsistent with that used by kubeadm. It is recommended that using "registry.k8s.io/pause:3.9" as the CRI sandbox image.
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [ip-172-31-58-204 kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 172.31.58.204]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [ip-172-31-58-204 localhost] and IPs [172.31.58.204 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [ip-172-31-58-204 localhost] and IPs [172.31.58.204 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 7.502998 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node ip-172-31-58-204 as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node ip-172-31-58-204 as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]
+[bootstrap-token] Using token: f8qx8x.49tzbchmotj3bbi6
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.58.204:6443 --token f8qx8x.49tzbchmotj3bbi6 \
+        --discovery-token-ca-cert-hash sha256:9c462c056808728a70f9d8dacdc32374959ca7e1089d26b501663edf9e0f372b
+root@ip-172-31-58-204:~#
+now in the background it will create clusters
+Cluster creation can take several minutes to complete. Progress information will be displayed in your terminal. You should see this message upon success:
+
+Your Kubernetes control-plane has initialized successfully!
+The output also includes information on how to start using your cluster.
+
+Preparing Your Kubeconfig File
+Begin by copying the auto-generated Kubeconfig file into your own .kube/config directory. Adjust the file's ownership to yourself so that Kubectl can read its contents correctly.
+
+$ mkdir -p $HOME/.kube
+
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+
+
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+root@ip-172-31-58-204:~#  mkdir -p $HOME/.kube
+root@ip-172-31-58-204:~# echo $HOME
+/root
+root@ip-172-31-58-204:~# cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+root@ip-172-31-58-204:~#  chown $(id -u):$(id -g) $HOME/.kube/config
+root@ip-172-31-58-204:~# vim $HOME/.kube/config
+root@ip-172-31-58-204:~#
+  root@ip-172-31-58-204:~# kubectl version
+Client Version: v1.28.2
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Server Version: v1.28.3
+now not getting the prev error your local host is 
+
+root@ip-172-31-58-204:~# kubectl version
+Client Version: v1.28.2
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Server Version: v1.28.3
+root@ip-172-31-58-204:~# kubectl get pod
+No resources found in default namespace.
+root@ip-172-31-58-204:~# kubuctl get pod -A
+kubuctl: command not found
+root@ip-172-31-58-204:~# kubetcl get pdo -A
+kubetcl: command not found
+root@ip-172-31-58-204:~# kubectl get pod -A
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   coredns-5dd5756b68-b8vqq                   0/1     Pending   0          8m44s
+kube-system   coredns-5dd5756b68-qdkt9                   0/1     Pending   0          8m44s
+kube-system   etcd-ip-172-31-58-204                      1/1     Running   0          8m59s
+kube-system   kube-apiserver-ip-172-31-58-204            1/1     Running   0          8m59s
+kube-system   kube-controller-manager-ip-172-31-58-204   1/1     Running   0          8m59s
+kube-system   kube-proxy-jw9h7                           1/1     Running   0          8m44s
+kube-system   kube-scheduler-ip-172-31-58-204            1/1     Running   0          9m
+root@ip-172-31-58-204:~#
+
+
+Installing a Pod Networking Addon
+Kubernetes requires a Pod networking addon to exist in your cluster before worker nodes begin operating normally. You must manually install a compatible addon to complete your installation.
+
+Calico and Flannel are the two most popular choices. This guide uses Flannel because of it's simple installation experience.
+
+
+Use Kubectl to add Flannel to your cluster:
+
+$ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
+
+  containerd config default > /etc/containerd/config.toml
+    2  vim /etc/containerd/config.toml
+    3  sudo service containerd restart
+    4  sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
+    5  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    6  sudo apt-get update -y
+    7  sudo apt update
+    8  sudo apt-mark hold kubeadm kubectl kubelet
+    9  kubectl version
+   10  kubectl --version
+   11  kubectl --v
+   12  kubectl version
+   13  history
+   14  kubectl version
+   15  sudo swapoff -a
+   16  vim etc/fstab
+   17  kubectl get pod
+   18  kubectl get pod -A
+   19  kubectl get pods --all -namespaces
+   20  kubectl get pods --all-namespaces
+   21  kubectl get podf
+   22  kubectl get pod
+   23  kubectl rum reena-pod -image=nginx
+   24  kubectl run \\reena-pod -image=nginx
+   25  kubectl run reena-pod --image=nginx
+   26  kubectl get podf
+   27  kubectl get pod
+   28  kubectl get nodes
+   29  kubectl get node
+   30  kubectl get pod
+   31  kubectl describe po
+   32  curl 10.244.0.4//ip address 
+   33  kubectl detele pod
+   34  kubectl get pod
+   35  kubectl delete pod reena-pod
+   36  kubectl pod
+   37  kubectlget pod
+   38  kubectl get pod
