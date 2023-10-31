@@ -1,0 +1,306 @@
+Here is a detailed step-by-step guide for installing Kubernetes on a Ubuntu-based system:
+Note:** Make sure you have SSH access to the server and have the necessary permissions to run the following commands.
+1)launch ec2
+use ubuntu
+and for master node minimum requirement is 2cpu and 4gb RAM so select t2.meduium
+and login to server
+
+Installing a Container Runtime
+
+/*Kubernetes needs a CRI-compatible container runtime to start and run your containers.
+The standard Kubernetes distribution doesn't come with a runtime so you should install one before you continue. 
+containerd is the most popular choice. 
+It's the runtime included with modern Docker releases.
+You can install containerd using Docker's Apt repository.
+First add some dependencies that'll be used during the installation procedure:*/
+
+ubuntu@ip-172-31-54-227:~$ sudo apt update -y
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports InRelease [109 kB]
+Get:4 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/universe amd64 Packages [14.1 MB]
+Get:5 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Get:6 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/universe Translation-en [5652 kB]
+Get:7 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [938 kB]
+Get:8 http://security.ubuntu.com/ubuntu jammy-security/main Translation-en [185 kB]
+Get:9 http://security.ubuntu.com/ubuntu jammy-security/main amd64 c-n-f Metadata [11.4 kB]
+Get:10 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [1079 kB]
+Get:11 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/universe amd64 c-n-f Metadata [286 kB]
+Get:12 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/multiverse amd64 Packages [217 kB]
+Get:13 http://security.ubuntu.com/ubuntu jammy-security/restricted Translation-en [175 kB]
+Get:14 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/multiverse Translation-en [112 kB]
+Get:15 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 c-n-f Metadata [536 B]
+Get:16 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [796 kB]
+Get:17 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy/multiverse amd64 c-n-f Metadata [8372 B]
+Get:18 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [1146 kB]
+Get:19 http://security.ubuntu.com/ubuntu jammy-security/universe Translation-en [146 kB]
+Get:20 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 c-n-f Metadata [16.8 kB]
+Get:21 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [36.5 kB]
+Get:22 http://security.ubuntu.com/ubuntu jammy-security/multiverse Translation-en [7060 B]
+Get:23 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 c-n-f Metadata [260 B]
+Get:24 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main Translation-en [244 kB]
+Get:25 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main amd64 c-n-f Metadata [16.1 kB]
+Get:26 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [1099 kB]
+Get:27 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/restricted Translation-en [178 kB]
+Get:28 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 c-n-f Metadata [536 B]
+Get:29 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [998 kB]
+Get:30 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/universe Translation-en [218 kB]
+Get:31 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 c-n-f Metadata [22.0 kB]
+Get:32 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [41.6 kB]
+Get:33 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/multiverse Translation-en [9768 B]
+Get:34 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 c-n-f Metadata [472 B]
+Get:35 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [64.2 kB]
+Get:36 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/main Translation-en [10.5 kB]
+Get:37 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/main amd64 c-n-f Metadata [388 B]
+Get:38 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/restricted amd64 c-n-f Metadata [116 B]
+Get:39 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [27.8 kB]
+Get:40 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/universe Translation-en [16.4 kB]
+Get:41 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/universe amd64 c-n-f Metadata [644 B]
+Get:42 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports/multiverse amd64 c-n-f Metadata [116 B]
+Fetched 28.2 MB in 4s (6534 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+41 packages can be upgraded. Run 'apt ubuntu@ip-172-31-54-227:~$ sudo apt  install -y ca-certificates curl gnupg lsb-release
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+lsb-release is already the newest version (11.1.0ubuntu4).
+lsb-release set to manually installed.
+ca-certificates is already the newest version (20230311ubuntu0.22.04.1).
+ca-certificates set to manually installed.
+gnupg is already the newest version (2.2.27-3ubuntu2.1).
+gnupg set to manually installed.
+The following additional packages will be installed:
+  libcurl4
+The following packages will be upgraded:
+  curl libcurl4
+2 upgraded, 0 newly installed, 0 to remove and 39 not upgraded.
+Need to get 484 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Get:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main amd64 curl amd64 7.81.0-1ubuntu1.14 [194 kB]
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libcurl4 amd64 7.81.0-1ubuntu1.14 [290 kB]
+Fetched 484 kB in 0s (13.8 MB/s)
+(Reading database ... 64726 files and directories currently installed.)
+Preparing to unpack .../curl_7.81.0-1ubuntu1.14_amd64.deb ...
+Unpacking curl (7.81.0-1ubuntu1.14) over (7.81.0-1ubuntu1.13) ...
+Preparing to unpack .../libcurl4_7.81.0-1ubuntu1.14_amd64.deb ...
+Unpacking libcurl4:amd64 (7.81.0-1ubuntu1.14) over (7.81.0-1ubuntu1.13) ...
+Setting up libcurl4:amd64 (7.81.0-1ubuntu1.14) ...
+Setting up curl (7.81.0-1ubuntu1.14) ...
+Processing triggers for man-db (2.10.2-1) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.3) ...
+Scanning processes...
+Scanning linux images...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+list --upgradable' to see them.
+
+set up docker repository
+
+Next add the repository's GPG key to Apt's keyrings directory:
+
+ubuntu@ip-172-31-54-227:~$ sudo mkdir -p /etc/apt/keyrings
+ubuntu@ip-172-31-54-227:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+ubuntu@ip-172-31-54-227:~$
+
+Now you can add the correct repository for your system by running this command:
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+ 
+Update your package list to include the contents of the Docker repository:
+
+$ sudo apt update
+
+Finally install containerd:
+
+$ sudo apt install -y containerd.io
+
+Check the containerd service has started up:
+
+$ sudo service containerd status
+
+containerd.service - containerd container runtime
+
+ubuntu@ip-172-31-54-227:~$ sudo apt update
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Hit:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:4 https://download.docker.com/linux/ubuntu jammy InRelease
+Hit:5 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Fetched 119 kB in 1s (207 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+39 packages can be upgraded. Run 'apt list --upgradable' to see them.
+ubuntu@ip-172-31-54-227:~$ sudo apt install -y containerd.io
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  containerd.io
+0 upgraded, 1 newly installed, 0 to remove and 39 not upgraded.
+Need to get 28.6 MB of archives.
+After this operation, 116 MB of additional disk space will be used.
+Get:1 https://download.docker.com/linux/ubuntu jammy/stable amd64 containerd.io amd64 1.6.24-1 [28.6 MB]
+Fetched 28.6 MB in 0s (63.4 MB/s)
+Selecting previously unselected package containerd.io.
+(Reading database ... 64726 files and directories currently installed.)
+Preparing to unpack .../containerd.io_1.6.24-1_amd64.deb ...
+Unpacking containerd.io (1.6.24-1) ...
+Setting up containerd.io (1.6.24-1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /lib/systemd/system/containerd.service.
+Processing triggers for man-db (2.10.2-1) ...
+Scanning processes...
+Scanning linux images...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+ubuntu@ip-172-31-54-227:~$ sudo service containerd status
+● containerd.service - containerd container runtime
+     Loaded: loaded (/lib/systemd/system/containerd.service; enabled; vendor preset: enabled)
+     Active: active (running) since Tue 2023-10-31 07:06:28 UTC; 52s ago
+       Docs: https://containerd.io
+    Process: 2997 ExecStartPre=/sbin/modprobe overlay (code=exited, status=0/SUCCESS)
+   Main PID: 2998 (containerd)
+      Tasks: 8
+     Memory: 12.2M
+        CPU: 162ms
+     CGroup: /system.slice/containerd.service
+             └─2998 /usr/bin/containerd
+
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573009646Z" level=info msg="loading plugin \"io.containerd.grpc.v1.tasks\"..." type=io.containerd.grpc.v1
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573163674Z" level=info msg="loading plugin \"io.containerd.grpc.v1.version\"..." type=io.containerd.grpc.v1
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573295731Z" level=info msg="loading plugin \"io.containerd.tracing.processor.v1.otlp\"..." type=io.containerd.tracing.processor.v1
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573431661Z" level=info msg="skip loading plugin \"io.containerd.tracing.processor.v1.otlp\"..." error="no OpenTelemetry endpoint: sk>
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573562208Z" level=info msg="loading plugin \"io.containerd.internal.v1.tracing\"..." type=io.containerd.internal.v1
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.573735817Z" level=error msg="failed to initialize a tracing processor \"otlp\"" error="no OpenTelemetry endpoint: skip plugin"
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.574146059Z" level=info msg=serving... address=/run/containerd/containerd.sock.ttrpc
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.574342089Z" level=info msg=serving... address=/run/containerd/containerd.sock
+Oct 31 07:06:28 ip-172-31-54-227 systemd[1]: Started containerd container runtime.
+Oct 31 07:06:28 ip-172-31-54-227 containerd[2998]: time="2023-10-31T07:06:28.576915328Z" level=info msg="containerd successfully booted in 0.039025s"
+lines 1-22/22 (END)
+
+A few tweaks to the containerd config file are required to get it working properly with Kubernetes. First replace the file's content with containerd's default configuration:
+ubuntu@ip-172-31-54-227:~$  sudo containerd config default > /etc/containerd/config.toml
+-bash: /etc/containerd/config.toml: Permission denied
+//if error then do the following
+
+ubuntu@ip-172-31-54-227:~$ sudo -i
+
+root@ip-172-31-54-227:~#  containerd config default > /etc/containerd/config.toml
+
+This populates all the available config fields and sorts out some issues, such as CRI support being disabled on fresh installs.
+
+Next open /etc/containerd/config.toml and find the following line:
+
+
+vim /etc/containerd/config.toml
+
+
+      disable_snapshot_annotations = true
+      discard_unpacked_layers = false
+      ignore_rdt_not_enabled_errors = false
+      no_pivot = false
+      snapshotter = "overlayfs"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+        base_runtime_spec = ""
+        cni_conf_dir = ""
+        cni_max_conf_num = 0
+        container_annotations = []
+        pod_annotations = []
+        privileged_without_host_devices = false
+        runtime_engine = ""
+        runtime_path = ""
+        runtime_root = ""
+        runtime_type = ""
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime.options]
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          base_runtime_spec = ""
+          cni_conf_dir = ""
+          cni_max_conf_num = 0
+          container_annotations = []
+          pod_annotations = []
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_path = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+            BinaryName = ""
+            CriuImagePath = ""
+            CriuPath = ""
+            CriuWorkPath = ""
+            IoGid = 0
+            IoUid = 0
+            NoNewKeyring = false
+            NoPivotRoot = false
+            Root = ""
+            ShimCgroup = ""
+            SystemdCgroup = true//change this from false to true
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+        base_runtime_spec = ""
+        cni_conf_dir = ""
+        cni_max_conf_num = 0
+        container_annotations = []
+        pod_annotations = []
+        privileged_without_host_devices = false
+        runtime_engine = ""
+        runtime_path = ""
+        runtime_root = ""
+:wq
+
+
+SystemdCgroup = false
+Change the value to true:
+
+SystemdCgroup = true
+
+This modification is required to enable full support for systemd cgroup management. Without this option, Kubernetes system containers will periodically restart themselves.
+root@ip-172-31-54-227:~# service containerd restart
+
+Installing Kubeadm, Kubectl, and Kubelet
+The second phase in the process is to install Kubernetes tools. These three utilities provide the following capabilities:
+
+Kubeadm - An administration tool that operates at the cluster level. You'll use this to create your cluster and add additional nodes.
+Kubectl - Kubectl is the CLI you use to interact with your Kubernetes cluster once it's running.
+Kubelet - This is the Kubernetes process that runs on your cluster's worker nodes. It's responsible for maintaining contact with the control plane and starting new containers when requested.
+The three binaries are available in an Apt repository hosted by Google Cloud. First register the repository's GPG keyring:
+
+
+root@ip-172-31-54-227:~# sudo curl -fsSLo /etc/apt/keyrings/kubernetes.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+Next add the repository to your sources...
+*
+
+ echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+nd update your package list:
+
+
+
+
+
+$ sudo apt update
+Now install the packages:
+
+$ sudo apt install -y kubeadm kubectl kubelet
